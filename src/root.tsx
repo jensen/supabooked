@@ -1,4 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -6,7 +7,12 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
+import UserProvider from "~/context/user";
+import supabaseClient from "~/services/supabase";
+import { getUser } from "~/services/session";
+import type { LoaderFunction } from "@remix-run/node";
 
 import styles from "./styles/main.css";
 
@@ -20,7 +26,21 @@ export function links() {
   return [{ rel: "stylesheet", href: styles }];
 }
 
+export const loader: LoaderFunction = async ({ request }) => {
+  const { user } = await getUser(request.headers.get("Cookie"));
+
+  return json({
+    user,
+    env: {
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+    },
+  });
+};
+
 export default function App() {
+  const data = useLoaderData();
+
   return (
     <html lang="en">
       <head>
@@ -28,8 +48,15 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Outlet />
+        <UserProvider user={data.user} supabaseClient={supabaseClient()}>
+          <Outlet />
+        </UserProvider>
         <ScrollRestoration />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.env = ${JSON.stringify(data.env)}`,
+          }}
+        />
         <Scripts />
         <LiveReload />
       </body>
