@@ -118,18 +118,19 @@ order by
 
 end $$;
 
-create
-or replace function public.get_calendar() returns table (
-  date timestamp with time zone,
-  session json
-) language plpgsql as $$ begin return query with availability as (
+create function get_calendar()
+    returns TABLE(date timestamp with time zone, session json)
+    language plpgsql
+as
+$$
+begin return query
   select
     ts :: timestamp with time zone,
     row_to_json(s.*) as session
   from
     generate_series(
       current_date - '24 hours' :: interval,
-      current_date + (7 * 24 - 1 || ' hours') :: interval,
+      current_date + (8 * 24 - 1 || ' hours') :: interval,
       '1 hour'
     ) as ts
     left join sessions as s on date_part('year', s.scheduled_from) = date_part('year', ts)
@@ -138,13 +139,6 @@ or replace function public.get_calendar() returns table (
     and date_part('hour', s.scheduled_from) <= date_part('hour', ts)
     and date_part('hour', s.scheduled_to) > date_part('hour', ts)
   order by
-    ts ascl;
-)
-from
-  availability
-group by
-  date_trunc('day', availability.ts)
-order by
-  date_trunc('day', availability.ts) asc;
-
-end $$;
+    ts asc;
+end
+$$;

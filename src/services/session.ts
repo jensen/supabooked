@@ -19,7 +19,7 @@ export const getUser = async (cookie: string | null) => {
   const { getSession } = create();
 
   if (!cookie) {
-    return { user: null, accessToken: null };
+    return { user: null, accessToken: null, refreshToken: null };
   }
 
   const session = await getSession(cookie);
@@ -27,7 +27,7 @@ export const getUser = async (cookie: string | null) => {
   const access_token = session.get("accessToken");
 
   if (!access_token) {
-    return { user: null, accessToken: null };
+    return { user: null, accessToken: null, refreshToken: null };
   }
 
   const encodedUser = jwtDecoder(access_token);
@@ -49,7 +49,11 @@ export const getUser = async (cookie: string | null) => {
     ...encodedUser,
   };
 
-  return { user, accessToken: access_token };
+  return {
+    user,
+    accessToken: access_token,
+    refreshToken: session.get("refreshToken"),
+  };
 };
 
 export const getExpiry = () => {

@@ -1,5 +1,6 @@
 import type { User, SupabaseClient } from "@supabase/supabase-js";
 import { useContext, createContext, useEffect, useState } from "react";
+import { useNavigate } from "@remix-run/react";
 
 interface IUserContext {
   isAuthenticated: boolean;
@@ -32,6 +33,7 @@ const fetchCallback = async (body: { [key: string]: string }) => {
 
 const useAuthCallback = (client: SupabaseClient) => {
   const [auth, setAuth] = useState({ user: null, accessToken: null });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const { subscription } = client.auth.onAuthStateChange(
@@ -51,12 +53,14 @@ const useAuthCallback = (client: SupabaseClient) => {
         const auth = await fetchCallback({ event, ...body });
 
         setAuth(auth);
+
+        navigate(auth.user ? "/sessions/new" : "/");
       }
     );
     return () => {
       subscription?.unsubscribe();
     };
-  }, [client.auth]);
+  }, [client.auth, navigate]);
 
   return auth;
 };
