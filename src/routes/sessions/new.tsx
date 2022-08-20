@@ -3,7 +3,14 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, Form } from "@remix-run/react";
 import supabaseClient from "~/services/supabase";
-import { getHours, isSameDay, format, getDate, addHours } from "date-fns";
+import {
+  isBefore,
+  getHours,
+  isSameDay,
+  format,
+  getDate,
+  addHours,
+} from "date-fns";
 import { utcToZonedTime } from "date-fns-tz";
 
 import Week from "~/components/calendar/Week";
@@ -103,7 +110,10 @@ export default function New() {
   if (days === null) return null;
 
   const handleSelectHour = (hour) => {
-    if (hour.session === null) {
+    if (
+      hour.session === null &&
+      isBefore(hour.date, addHours(new Date(), 1)) === false
+    ) {
       setSelectedHours((prev) =>
         /* toggle the selected state */
         prev.find((h) => h === hour)
