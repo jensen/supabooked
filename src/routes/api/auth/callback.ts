@@ -8,7 +8,6 @@ export const action: ActionFunction = async ({ request }) => {
   const { getSession, commitSession, destroySession } = create();
 
   const session = await getSession();
-  console.log(body.get("event"));
 
   if (body.get("event") === "SIGNED_OUT") {
     const cookie = await destroySession(session);
