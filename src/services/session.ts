@@ -52,11 +52,14 @@ export const getUser = async (cookie: string | null) => {
   return { user, accessToken: access_token };
 };
 
+export const getExpiry = () => {
+  return new Date(Date.now() + LENGTH * 1000);
+};
+
 export default function create() {
   const storage = createCookieSessionStorage({
     cookie: {
       name: "auth",
-      expires: new Date(Date.now() + LENGTH * 1000),
       httpOnly: true,
       maxAge: LENGTH,
       path: "/",

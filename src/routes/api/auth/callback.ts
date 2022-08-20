@@ -1,6 +1,6 @@
 import type { ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import create, { getUser } from "~/services/session";
+import create, { getUser, getExpiry } from "~/services/session";
 
 export const action: ActionFunction = async ({ request }) => {
   const body = await request.formData();
@@ -25,7 +25,9 @@ export const action: ActionFunction = async ({ request }) => {
     session.set("providerToken", body.get("provider_token"));
   }
 
-  const cookie = await commitSession(session);
+  const cookie = await commitSession(session, {
+    expires: getExpiry(),
+  });
 
   const user = await getUser(cookie);
 
