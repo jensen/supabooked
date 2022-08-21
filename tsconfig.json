@@ -6,6 +6,7 @@
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "moduleResolution": "node",
+    "module": "ES2020",
     "resolveJsonModule": true,
     "target": "ES2019",
     "strict": true,
@@ -15,6 +16,7 @@
     "paths": {
       "~/*": ["src/*"]
     },
+    "types": ["vitest/importMeta"],
 
     // Remix takes care of building everything in `remix build`.
     "noEmit": true

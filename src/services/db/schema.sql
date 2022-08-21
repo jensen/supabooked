@@ -95,46 +95,6 @@ create table settings (
 );
 
 -- Calendar
-create
-or replace function public.get_calendar() returns table (
-  day timestamp with time zone,
-  hours json []
-) language plpgsql as $$ begin return query with availability as (
-  select
-    ts :: timestamp with time zone,
-    row_to_json(s.*) as session
-  from
-    generate_series(
-      current_date - '24 hours' :: interval,
-      current_date + (7 * 24 - 1 || ' hours') :: interval,
-      '1 hour'
-    ) as ts
-    left join sessions as s on date_part('year', s.scheduled_from) = date_part('year', ts)
-    and date_part('month', s.scheduled_from) = date_part('month', ts)
-    and date_part('day', s.scheduled_from) = date_part('day', ts)
-    and date_part('hour', s.scheduled_from) <= date_part('hour', ts)
-    and date_part('hour', s.scheduled_to) > date_part('hour', ts)
-  order by
-    ts asc
-) select
-  date_trunc('day', availability.ts),
-  array_agg(
-    json_build_object(
-      'ts',
-      availability.ts,
-      'session',
-      availability.session
-    )
-  )
-from
-  availability
-group by
-  date_trunc('day', availability.ts)
-order by
-  date_trunc('day', availability.ts) asc;
-
-end $$;
-
 create function get_calendar()
     returns TABLE(date timestamp with time zone, session json)
     language plpgsql
@@ -150,11 +110,7 @@ begin return query
       current_date + (8 * 24 - 1 || ' hours') :: interval,
       '1 hour'
     ) as ts
-    left join sessions as s on date_part('year', s.scheduled_from) = date_part('year', ts)
-    and date_part('month', s.scheduled_from) = date_part('month', ts)
-    and date_part('day', s.scheduled_from) = date_part('day', ts)
-    and date_part('hour', s.scheduled_from) <= date_part('hour', ts)
-    and date_part('hour', s.scheduled_to) > date_part('hour', ts)
+    left join sessions as s on ts between s.scheduled_from and s.scheduled_to
   order by
     ts asc;
 end

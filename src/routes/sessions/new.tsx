@@ -16,6 +16,7 @@ import { utcToZonedTime } from "date-fns-tz";
 import Week from "~/components/calendar/Week";
 import { useEffect } from "react";
 import { getUser } from "~/services/session";
+import { groupContiguousBlocks } from "~/utils/date";
 
 export const action: ActionFunction = async ({ request }) => {
   const body = await request.formData();
@@ -33,19 +34,18 @@ export const action: ActionFunction = async ({ request }) => {
   await supabaseClient()
     .from("sessions")
     .insert(
-      selected.map((item) => {
+      groupContiguousBlocks(selected).map((item) => {
         return {
           title,
           description,
-          scheduled_from: new Date(item),
-          scheduled_to: addHours(new Date(item), 1),
+          scheduled_from: item[0],
+          scheduled_to: addHours(item[item.length - 1], 1),
           user_id: user.id,
         };
       })
-    )
-    .select();
+    );
 
-  return redirect(`/users/${user.id}/schedule`);
+  return redirect(`/schedule`);
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {

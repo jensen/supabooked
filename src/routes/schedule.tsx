@@ -17,7 +17,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   const sessions = await supabaseClient()
     .from("sessions")
     .select()
-    .order("scheduled_from");
+    .order("scheduled_from")
+    .match({ user_id: user.id });
 
   return json({
     sessions: sessions.data,
