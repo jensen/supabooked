@@ -15,7 +15,7 @@ const Hour = (props: HourProps) => {
   return (
     <li
       className={css(
-        "p-2 w-24 h-12 border-t border-l border-border bg-available last-of-type:border-b",
+        "p-2 w-20 h-10 border-t border-l border-border bg-available last-of-type:border-b",
         {
           "bg-unavailable bg-unavailable-pattern":
             props.available === false || isBefore(props.hour, addHours(now, 1)),
@@ -101,7 +101,7 @@ export default function Week(props: WeekProps) {
             <li
               key={hour.date.toString()}
               className={css(
-                "flex justify-end pr-2 w-24 h-12 text-xs font-light"
+                "flex justify-end pr-2 w-24 h-10 text-xs font-light"
               )}
             >
               {format(new Date(hour.date), "HH:mm")}

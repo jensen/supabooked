@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "@remix-run/react";
 import supabaseClient from "~/services/supabase";
 import Modal from "~/components/shared/Modal";
 import { FileArrowUp, CircleNotchAnimated } from "~/components/shared/Icons";
+import Button from "~/components/shared/Button";
 
 export default function Upload() {
   const params = useParams();
@@ -55,22 +56,20 @@ export default function Upload() {
         />
       </label>
       <div className="mt-4 flex justify-end space-x-4">
-        <button
+        <Button
           type="button"
-          className="border border-border px-8 py-2 hover:bg-red-400 hover:text-slate-300 disabled:opacity-50"
           onClick={handleClose}
           disabled={operation.uploading}
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className="border border-border px-8 py-2 hover:bg-red-400 hover:text-slate-300 disabled:opacity-50"
           onClick={handleUpload}
           disabled={operation.uploading || operation.file === null}
         >
           {operation.uploading ? "Uploading" : "Upload"}
-        </button>
+        </Button>
       </div>
     </Modal>
   );

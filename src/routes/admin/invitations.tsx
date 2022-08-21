@@ -1,6 +1,6 @@
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { redirect, json } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, useLoaderData, Outlet } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import supabaseClient from "~/services/supabase";
 import {
@@ -9,6 +9,7 @@ import {
   Copy,
   CircleLightning,
 } from "~/components/shared/Icons";
+import Button from "~/components/shared/Button";
 import { css } from "~/utils/styles";
 import { useStatus } from "~/context/status";
 
@@ -25,7 +26,7 @@ export const action: ActionFunction = async ({ request }) => {
     description,
   });
 
-  return redirect(`/admin`);
+  return redirect(`/admin/invitations`);
 };
 
 export const loader: LoaderFunction = async () => {
@@ -36,7 +37,7 @@ export const loader: LoaderFunction = async () => {
   });
 };
 
-export default function AdminIndex() {
+export default function AdminInvitations() {
   const data = useLoaderData();
 
   const { onlineUsers } = useStatus();
@@ -69,39 +70,43 @@ export default function AdminIndex() {
       channel.unsubscribe();
     };
   }, []);
-
   return (
-    <section className="h-full grid place-content-center">
-      <Form method="post" className="flex flex-col space-y-4">
-        <label className="flex flex-col space-y-2">
-          <span className="text-sm">Email</span>
-          <input
-            type="email"
-            name="email"
-            className="px-2 py-1 bg-transparent border border-border"
-          />
-        </label>
-        <label className="flex flex-col space-y-2">
-          <span className="text-sm">Subject</span>
-          <input
-            type="text"
-            name="subject"
-            className="px-2 py-1 bg-transparent border border-border"
-          />
-        </label>
-        <label className="flex flex-col space-y-2">
-          <span className="text-sm">Description</span>
-          <textarea
-            rows={3}
-            name="description"
-            className="px-2 py-1 bg-transparent border border-border resize-none"
-          ></textarea>
-        </label>
-        <button className="border border-border px-8 py-2 hover:bg-red-400 hover:text-slate-300">
-          Create Invitation
-        </button>
+    <>
+      <Form
+        method="post"
+        className="flex flex-col space-y-4 border-b border-border pb-8"
+      >
+        <div className="flex space-x-8">
+          <div className="flex flex-col space-y-4">
+            <label className="flex flex-col space-y-2">
+              <span className="text-sm">Email</span>
+              <input
+                type="email"
+                name="email"
+                className="px-2 py-1 bg-transparent border border-border"
+              />
+            </label>
+            <label className="flex flex-col space-y-2">
+              <span className="text-sm">Subject</span>
+              <input
+                type="text"
+                name="subject"
+                className="px-2 py-1 bg-transparent border border-border"
+              />
+            </label>
+          </div>
+          <label className="flex flex-col space-y-2 flex-grow">
+            <span className="text-sm">Description</span>
+            <textarea
+              name="description"
+              className="h-full px-2 py-1 bg-transparent border border-border resize-none"
+            ></textarea>
+          </label>
+        </div>
+
+        <Button>Create Invitation</Button>
       </Form>
-      <div className="overflow-x-auto relative mt-6">
+      <div className="overflow-x-auto relative mt-4">
         <table className="w-full text-sm text-left text-text">
           <thead className="text-xs uppercase">
             <tr>
@@ -115,10 +120,10 @@ export default function AdminIndex() {
                 Details
               </th>
               <th scope="col" className="py-3 px-6">
-                Viewed
+                &nbsp;
               </th>
               <th scope="col" className="py-3 px-6">
-                Emailed
+                &nbsp;
               </th>
               <th scope="col" className="py-3 px-6">
                 &nbsp;
@@ -182,6 +187,6 @@ export default function AdminIndex() {
           </tbody>
         </table>
       </div>
-    </section>
+    </>
   );
 }

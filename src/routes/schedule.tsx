@@ -1,17 +1,19 @@
 import { useState } from "react";
 import type { LoaderFunction } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { getUser } from "~/services/session";
 import supabaseClient from "~/services/supabase";
 import { format } from "date-fns";
 import { useEffect } from "react";
+import Button from "~/components/shared/Button";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const { user } = await getUser(request.headers.get("Cookie"));
 
   if (!user) {
-    throw new Error("Must be logged in");
+    return redirect("/");
   }
 
   const sessions = await supabaseClient()
@@ -73,17 +75,15 @@ export default function UserSchedule() {
   if (sessions === null) return null;
 
   return (
-    <div className="h-full grid place-content-center gap-8">
-      <ul className="w-96">
+    <>
+      <ul className="w-full mb-4">
         {sessions.map((session) => (
           <Session key={session.id} session={session} />
         ))}
       </ul>
       <Link to="/sessions/new">
-        <button className="border border-border px-8 py-2 hover:bg-red-400 hover:text-slate-300">
-          New Session
-        </button>
+        <Button>New Session</Button>
       </Link>
-    </div>
+    </>
   );
 }

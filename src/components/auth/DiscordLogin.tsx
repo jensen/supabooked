@@ -5,7 +5,7 @@ export default function DiscordLogin() {
 
   return (
     <button
-      className="bg-discord-blue px-4 py-2 rounded flex items-center gap-2"
+      className="bg-discord-blue px-4 py-1 rounded flex items-center gap-2"
       onClick={login}
     >
       <svg

@@ -1,13 +1,16 @@
-import DiscordLogin from "~/components/auth/DiscordLogin";
-import Logout from "~/components/auth/Logout";
-import { useUser } from "~/context/user";
+import type { LoaderFunction } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { getUser } from "~/services/session";
 
+export const loader: LoaderFunction = async ({ request }) => {
+  const { user } = await getUser(request.headers.get("Cookie"));
+
+  if (user) {
+    return redirect("/schedule");
+  }
+
+  return json({});
+};
 export default function Index() {
-  const { isAuthenticated } = useUser();
-
-  return (
-    <div className="h-full flex justify-center items-center">
-      {isAuthenticated ? <Logout /> : <DiscordLogin />}
-    </div>
-  );
+  return <div>Splash</div>;
 }

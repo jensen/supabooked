@@ -31,7 +31,7 @@ const fetchCallback = async (body: { [key: string]: string }) => {
   return response.json();
 };
 
-const useAuthCallback = (client: SupabaseClient) => {
+const useAuthCallback = (user: User, client: SupabaseClient) => {
   const [auth, setAuth] = useState({ user: null, accessToken: null });
   const navigate = useNavigate();
 
@@ -55,7 +55,7 @@ const useAuthCallback = (client: SupabaseClient) => {
 
           setAuth(response);
 
-          if (auth.user === null) {
+          if (user === null) {
             navigate(response.user ? "/sessions/new" : "/");
           }
         }
@@ -64,7 +64,7 @@ const useAuthCallback = (client: SupabaseClient) => {
     return () => {
       subscription?.unsubscribe();
     };
-  }, [auth.user, client.auth, navigate]);
+  }, [user, client.auth, navigate]);
 
   return auth;
 };
@@ -77,7 +77,7 @@ interface Props {
 export default function UserProvider(props: React.PropsWithChildren<Props>) {
   const { supabaseClient, user: authedUser } = props;
 
-  const auth = useAuthCallback(supabaseClient);
+  const auth = useAuthCallback(authedUser, supabaseClient);
 
   const user = auth.user || authedUser;
 

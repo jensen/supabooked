@@ -4,7 +4,6 @@ import {
   Links,
   LiveReload,
   Meta,
-  Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
@@ -16,6 +15,7 @@ import type { LoaderFunction } from "@remix-run/node";
 
 import styles from "./styles/main.css";
 import StatusProvider from "./context/status";
+import PageLayout from "~/components/layout/Page";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -52,7 +52,7 @@ export default function App() {
       <body>
         <UserProvider user={data.user} supabaseClient={supabaseClient()}>
           <StatusProvider>
-            <Outlet />
+            <PageLayout />
           </StatusProvider>
         </UserProvider>
         <ScrollRestoration />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, Form } from "@remix-run/react";
@@ -12,9 +12,8 @@ import {
   addHours,
 } from "date-fns";
 import { utcToZonedTime } from "date-fns-tz";
-
+import Button from "~/components/shared/Button";
 import Week from "~/components/calendar/Week";
-import { useEffect } from "react";
 import { getUser } from "~/services/session";
 import { groupContiguousBlocks } from "~/utils/date";
 
@@ -130,7 +129,7 @@ export default function New() {
   };
 
   return (
-    <div className="h-full flex justify-center items-center">
+    <>
       <Form className="flex" method="post">
         <div className="flex flex-col space-y-12 justify-center">
           <div className="flex flex-col space-y-4">
@@ -151,11 +150,9 @@ export default function New() {
               ></textarea>
             </label>
           </div>
-          <button className="border border-border px-8 py-2 hover:bg-red-400 hover:text-slate-300">
-            Book
-          </button>
+          <Button>Book</Button>
         </div>
-        <div className="flex flex-col space-y-4">
+        <div className="flex-grow flex justify-end">
           <Week
             availability={days}
             selectedHours={selectedHours}
@@ -171,6 +168,6 @@ export default function New() {
           ))}
         </div>
       </Form>
-    </div>
+    </>
   );
 }

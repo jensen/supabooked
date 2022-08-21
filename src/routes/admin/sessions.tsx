@@ -38,7 +38,7 @@ interface SessionProps {
 
 const Session = (props: SessionProps) => {
   return (
-    <li className="flex justify-between space-x-4 border-b border-border py-2 px-2">
+    <li className="w-full flex justify-between space-x-4 border-b border-border py-2 px-2">
       <div className="flex flex-col flex-grow">
         <span className="text-lg">{props.session.title}</span>
         <span className="text-xs">{props.session.description}</span>
@@ -69,7 +69,7 @@ const Session = (props: SessionProps) => {
   );
 };
 
-export default function UserSchedule() {
+export default function AdminSessions() {
   const data = useLoaderData<{ sessions: ISession[] }>();
 
   const [sessions, setSessions] = useState<IDateSession[] | null>(null);
@@ -87,13 +87,13 @@ export default function UserSchedule() {
   if (sessions === null) return null;
 
   return (
-    <div className="h-full grid place-content-center gap-8">
-      <Outlet />
-      <ul>
+    <>
+      <ul className="w-full">
         {sessions.map((session) => (
           <Session key={session.id} session={session} />
         ))}
       </ul>
-    </div>
+      <Outlet />
+    </>
   );
 }

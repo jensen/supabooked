@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "@remix-run/react";
 import supabaseClient from "~/services/supabase";
 import Modal from "~/components/shared/Modal";
+import Button from "~/components/shared/Button";
 
 export default function View() {
   const params = useParams();
@@ -32,13 +33,9 @@ export default function View() {
         <div className="bg-black w-full h-[225px]">&nbsp;</div>
       )}
       <div className="mt-4 flex justify-end">
-        <button
-          type="button"
-          className="border border-border px-8 py-2 hover:bg-red-400 hover:text-slate-300"
-          onClick={handleClose}
-        >
+        <Button type="button" onClick={handleClose}>
           Done
-        </button>
+        </Button>
       </div>
     </Modal>
   );
