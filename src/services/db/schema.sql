@@ -53,15 +53,42 @@ after
 insert
   on auth.users for each row execute procedure handle_new_user();
 
+drop trigger if exists on_storage_object_added on storage.objects;
+
+drop function if exists handle_new_storage_object();
+create function handle_new_storage_object()
+returns trigger
+language plpgsql
+security definer
+set search_path = public as $$ begin
+
+update sessions set video = new.name where id = left(new.name, 0 - length('.mp4'))::uuid_generate_v4;
+
+return new;
+
+end;
+$$;
+
+create trigger on_storage_object_added
+after
+insert
+  on storage.objects for each row execute procedure handle_new_storage_object();
+
+
 -- Sessions
 create table sessions (
   id uuid default extensions.uuid_generate_v4() primary key,
   created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
   updated_at timestamp with time zone default timezone('utc' :: text, now()) not null,
+
   title text not null,
   description text not null,
+
   scheduled_from timestamp with time zone not null,
   scheduled_to timestamp with time zone not null,
+
+  video text,
+
   user_id uuid default auth.uid() not null,
   constraint user_id foreign key(user_id) references profiles(id) on delete cascade
 );

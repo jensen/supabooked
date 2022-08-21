@@ -38,29 +38,33 @@ const useAuthCallback = (client: SupabaseClient) => {
   useEffect(() => {
     const { subscription } = client.auth.onAuthStateChange(
       async (event, session) => {
-        const body: {
-          access_token?: string;
-          refresh_token?: string;
-          provider_token?: string;
-        } = session
-          ? {
-              access_token: session.access_token,
-              refresh_token: session.refresh_token,
-              provider_token: session.provider_token || "",
-            }
-          : {};
+        if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+          const body: {
+            access_token?: string;
+            refresh_token?: string;
+            provider_token?: string;
+          } = session
+            ? {
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+                provider_token: session.provider_token || "",
+              }
+            : {};
 
-        const auth = await fetchCallback({ event, ...body });
+          const response = await fetchCallback({ event, ...body });
 
-        setAuth(auth);
+          setAuth(response);
 
-        navigate(auth.user ? "/sessions/new" : "/");
+          if (auth.user === null) {
+            navigate(response.user ? "/sessions/new" : "/");
+          }
+        }
       }
     );
     return () => {
       subscription?.unsubscribe();
     };
-  }, [client.auth, navigate]);
+  }, [auth.user, client.auth, navigate]);
 
   return auth;
 };
