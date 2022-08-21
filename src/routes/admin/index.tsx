@@ -42,7 +42,7 @@ export default function AdminIndex() {
       .channel("*")
       .on(
         "postgres_changes",
-        { event: "*", schema: "*" },
+        { event: "UPDATE", schema: "public", table: "invitations" },
         (payload: { new: IInvitation }) => {
           setInvitations((prev) =>
             prev.map((invitation) => {
