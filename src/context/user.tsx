@@ -83,7 +83,14 @@ export default function UserProvider(props: React.PropsWithChildren<Props>) {
         isAuthenticated: Boolean(user),
         user,
         login: () =>
-          supabaseClient.auth.signInWithOAuth({ provider: "discord" }),
+          supabaseClient.auth.signInWithOAuth({
+            provider: "discord",
+            options: {
+              redirectTo: `${
+                (window as WindowWithEnvironment).env.SITE_URL
+              }/authenticated`,
+            },
+          }),
         logout: () => supabaseClient.auth.signOut(),
       }}
     >

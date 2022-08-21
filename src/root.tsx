@@ -34,6 +34,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     env: {
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+      SITE_URL: process.env.SITE_URL,
     },
   });
 };

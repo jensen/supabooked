@@ -17,3 +17,13 @@ interface ISession {
   scheduled_from: string;
   scheduled_to: string;
 }
+
+interface IInvitation {
+  id: string;
+  email: string;
+  title: string;
+  description: string;
+  viewed: boolean;
+  emailed: boolean;
+  user_id: string;
+}

@@ -7,6 +7,8 @@ create table profiles (
   avatar text
 );
 
+drop table if exists profiles_private;
+
 create table profiles_private (
   id uuid references profiles(id) primary key,
   email text,
@@ -20,11 +22,11 @@ create policy "Profiles are only visible by the user who owns it" on profiles_pr
 select
   using (auth.uid() = id);
 
-drop function if exists handle_new_user();
+drop trigger if exists on_auth_user_created on auth.users;
 
+drop function if exists handle_new_user();
 create function handle_new_user() returns trigger language plpgsql security definer
-set
-  search_path = public as $ $ begin
+set search_path = public as $$ begin
 insert into
   profiles (id, name, avatar)
 values
@@ -39,13 +41,12 @@ insert into
 values
   (new.id, new.email);
 
+update invitations set user_id = new.id where email = new.email;
+
 return new;
 
 end;
-
-$ $;
-
-drop trigger if exists on_auth_user_created on auth.users;
+$$;
 
 create trigger on_auth_user_created
 after
@@ -62,6 +63,22 @@ create table sessions (
   scheduled_from timestamp with time zone not null,
   scheduled_to timestamp with time zone not null,
   user_id uuid default auth.uid() not null,
+  constraint user_id foreign key(user_id) references profiles(id) on delete cascade
+);
+
+-- Invitations
+create table invitations (
+  id uuid default extensions.uuid_generate_v4() primary key,
+  created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc' :: text, now()) not null,
+
+  email text not null, 
+  title text not null,
+  description text not null,
+  emailed boolean default false,
+  viewed boolean default false,
+ 
+  user_id uuid,
   constraint user_id foreign key(user_id) references profiles(id) on delete cascade
 );
 

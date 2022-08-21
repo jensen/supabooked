@@ -48,15 +48,21 @@ export const action: ActionFunction = async ({ request }) => {
   return redirect(`/users/${user.id}/schedule`);
 };
 
-export const loader: LoaderFunction = async () => {
-  const [calendar, settings] = await Promise.all([
-    supabaseClient().rpc("get_calendar"),
-    supabaseClient().from("settings").select().single(),
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const url = new URL(request.url);
+  const id = url.searchParams.get("invitation");
+
+  const client = supabaseClient();
+  const [calendar, settings, invitations] = await Promise.all([
+    client.rpc("get_calendar"),
+    client.from("settings").select().single(),
+    client.from("invitations").update({ viewed: true }).match({ id }).select(),
   ]);
 
   return json({
     availability: calendar.data,
     settings: settings.data,
+    invitations: invitations.data || null,
   });
 };
 

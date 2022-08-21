@@ -5,7 +5,8 @@ type EnvironmentVars =
   | "SUPABASE_URL"
   | "SUPABASE_ANON_KEY"
   | "COOKIE_SESSION_KEY_A"
-  | "COOKIE_SESSION_KEY_B";
+  | "COOKIE_SESSION_KEY_B"
+  | "SITE_URL";
 
 type WindowWithEnvironment = Window &
   typeof globalThis & {
