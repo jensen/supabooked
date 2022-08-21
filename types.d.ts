@@ -16,6 +16,7 @@ interface ISession {
   description: string;
   scheduled_from: string;
   scheduled_to: string;
+  video: string | null;
 }
 
 interface IInvitation {

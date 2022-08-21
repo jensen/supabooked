@@ -38,9 +38,8 @@ export default function AdminIndex() {
   );
 
   useEffect(() => {
-    const channel = supabaseClient().channel("*");
-
-    channel
+    const channel = supabaseClient()
+      .channel("*")
       .on("postgres_changes", { event: "*", schema: "*" }, (payload) => {
         setInvitations((prev) =>
           prev.map((invitation) => {
