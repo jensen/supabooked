@@ -15,6 +15,7 @@ import { getUser } from "~/services/session";
 import type { LoaderFunction } from "@remix-run/node";
 
 import styles from "./styles/main.css";
+import StatusProvider from "./context/status";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -50,7 +51,9 @@ export default function App() {
       </head>
       <body>
         <UserProvider user={data.user} supabaseClient={supabaseClient()}>
-          <Outlet />
+          <StatusProvider>
+            <Outlet />
+          </StatusProvider>
         </UserProvider>
         <ScrollRestoration />
         <script

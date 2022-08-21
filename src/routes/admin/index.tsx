@@ -3,8 +3,14 @@ import { redirect, json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import supabaseClient from "~/services/supabase";
-import { Eye, EnvelopeCircleCheck, Copy } from "~/components/shared/Icons";
+import {
+  Eye,
+  EnvelopeCircleCheck,
+  Copy,
+  CircleLightning,
+} from "~/components/shared/Icons";
 import { css } from "~/utils/styles";
+import { useStatus } from "~/context/status";
 
 export const action: ActionFunction = async ({ request }) => {
   const body = await request.formData();
@@ -33,13 +39,15 @@ export const loader: LoaderFunction = async () => {
 export default function AdminIndex() {
   const data = useLoaderData();
 
+  const { onlineUsers } = useStatus();
+
   const [invitations, setInvitations] = useState<IInvitation[]>(
     data.invitations
   );
 
   useEffect(() => {
     const channel = supabaseClient()
-      .channel("*")
+      .channel("db-changes")
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "invitations" },
@@ -58,7 +66,7 @@ export default function AdminIndex() {
       .subscribe();
 
     return () => {
-      supabaseClient().removeChannel(channel);
+      channel.unsubscribe();
     };
   }, []);
 
@@ -98,6 +106,9 @@ export default function AdminIndex() {
           <thead className="text-xs uppercase">
             <tr>
               <th scope="col" className="py-3 px-6">
+                &nbsp;
+              </th>
+              <th scope="col" className="py-3 px-6">
                 Email
               </th>
               <th scope="col" className="py-3 px-6">
@@ -120,6 +131,15 @@ export default function AdminIndex() {
                 key={invitation.id}
                 className="bg-background border-border border-b"
               >
+                <td
+                  className={css("py-4 px-6", {
+                    "text-green-500": onlineUsers.includes(invitation.user_id),
+                    "text-gray-400 opacity-50":
+                      onlineUsers.includes(invitation.user_id) === false,
+                  })}
+                >
+                  <CircleLightning />
+                </td>
                 <th
                   scope="row"
                   className="py-4 px-6 font-medium whitespace-nowrap"
