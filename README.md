@@ -23,15 +23,15 @@ Backed by Supabase, a user can create invitations to schedule meetings. The user
 
 ### Timezones
 
-For the most part we can let the browser convert the dates for us. In some cases we need to compare dates based on the specific timezone of a user.
+For the most part, we can let the browser convert the dates for us. In some cases, we need to compare dates based on the specific timezone of a user.
 
 ### supabase-js v2
 
-Using the lastest release candidate for supabase-js to handle realtime, storage, auth and database queries.
+Using the latest release candidate for supabase-js to handle realtime, storage, auth and database queries.
 
 ### Authentication
 
-Still searching for ideal authentication strategies. In this prototype the persistence is turned off since the server runtime has no local storage. Instead we use a session stored in a cookie.
+I am still searching for ideal authentication strategies. In this prototype, the persistence is turned off since the server runtime has no local storage. Instead, we use a session stored in a cookie.
 
 Refreshing the token on the client and the server is ripe for desyncing.
 
@@ -39,9 +39,11 @@ Refreshing the token on the client and the server is ripe for desyncing.
 
 When a user views an invitation or signs up after being invited, the updates to the db are subscribed to by the admin panel.
 
+The new real-time presence is used to show an admin which of the invited users are currently active on the site. This is shown with a green lightning bolt that is otherwise grayed out when the user is inactive.
+
 ### Storage
 
-An admin can upload a video that attaches to a session. A database trigger is listening for updates to the `storage.objects` table, it updates the `sesssions` table with file keys.
+An admin can upload a video that attaches to a session. A database trigger is listening for updates to the `storage.objects` table; it updates the `sesssions` table with file keys.
 
 ## Next Steps
 
