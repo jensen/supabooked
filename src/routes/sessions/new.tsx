@@ -50,16 +50,21 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const id = url.searchParams.get("invitation");
 
   const client = await supabaseClient();
-  const [calendar, settings, invitations] = await Promise.all([
+  const [calendar, settings, invitation] = await Promise.all([
     client.rpc("get_calendar"),
     client.from("settings").select().single(),
-    client.from("invitations").update({ viewed: true }).match({ id }).select(),
+    client
+      .from("invitations")
+      .update({ viewed: true })
+      .match({ id })
+      .select()
+      .single(),
   ]);
 
   return json({
     availability: calendar.data,
     settings: settings.data,
-    invitations: invitations.data || null,
+    invitation: invitation.data || null,
   });
 };
 
@@ -69,6 +74,7 @@ interface ILoaderData {
     session: any;
   }[];
   settings: { timezone: string; start_time: number; end_time: number };
+  invitation: unknown | null;
 }
 
 export default function New() {
@@ -137,6 +143,7 @@ export default function New() {
                 type="text"
                 name="subject"
                 className="px-2 py-1 bg-transparent border border-border"
+                defaultValue={data.invitation?.title ?? ""}
               />
             </label>
             <label className="flex flex-col space-y-2">
@@ -145,6 +152,7 @@ export default function New() {
                 rows={5}
                 name="description"
                 className="px-2 py-1 bg-transparent border border-border resize-none"
+                defaultValue={data.invitation?.description ?? ""}
               ></textarea>
             </label>
           </div>
