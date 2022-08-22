@@ -10,7 +10,7 @@ export default function Button({
     <button
       {...props}
       className={css(
-        "border border-border px-8 py-1",
+        "border border-border px-8 py-1 flex justify-center items-center space-x-2",
         "hover:bg-red-400 hover:text-red-900",
         "focus:outline-none disabled:opacity-50"
       )}

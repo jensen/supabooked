@@ -1,13 +1,14 @@
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { redirect, json } from "@remix-run/node";
-import { Form, useLoaderData, Outlet } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { Form, useLoaderData, useTransition } from "@remix-run/react";
+import { useRef, useEffect, useState } from "react";
 import supabaseClient from "~/services/supabase";
 import {
   Eye,
   EnvelopeCircleCheck,
   Copy,
   CircleLightning,
+  CircleNotchAnimated,
 } from "~/components/shared/Icons";
 import Button from "~/components/shared/Button";
 import { css } from "~/utils/styles";
@@ -42,6 +43,11 @@ export const loader: LoaderFunction = async ({ context }) => {
 
 export default function AdminInvitations() {
   const data = useLoaderData();
+  const transition = useTransition();
+
+  const invitationFormRef = useRef<HTMLFormElement>(null);
+  const isCreating = transition.state === "submitting";
+
   const { supabaseClient } = useUser();
 
   const { onlineUsers } = useStatus();
@@ -49,6 +55,16 @@ export default function AdminInvitations() {
   const [invitations, setInvitations] = useState<IInvitation[]>(
     data.invitations
   );
+
+  useEffect(() => {
+    if (!isCreating && invitationFormRef.current) {
+      invitationFormRef.current.reset();
+    }
+  }, [isCreating]);
+
+  useEffect(() => {
+    setInvitations(data.invitations);
+  }, [data.invitations]);
 
   useEffect(() => {
     if (supabaseClient === null) return;
@@ -80,6 +96,7 @@ export default function AdminInvitations() {
   return (
     <>
       <Form
+        ref={invitationFormRef}
         method="post"
         className="flex flex-col space-y-4 border-b border-border pb-8"
       >
@@ -111,7 +128,10 @@ export default function AdminInvitations() {
           </label>
         </div>
 
-        <Button>Create Invitation</Button>
+        <Button disabled={isCreating}>
+          {isCreating && <CircleNotchAnimated />}
+          <span>{isCreating ? "Creating..." : "Create Invitation"}</span>
+        </Button>
       </Form>
       <div className="overflow-x-auto relative mt-4">
         <table className="w-full text-sm text-left text-text">

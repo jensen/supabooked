@@ -32,7 +32,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       .select()
       .single();
 
-    if (profile.data.admin === false) {
+    if (profile.error || profile.data.admin === false) {
       return redirect("/schedule", {
         headers: new Headers({ "Set-Cookie": cookie }),
       });
@@ -52,7 +52,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     );
   }
 
-  return json({});
+  return redirect("/");
 };
 
 const pages = ["invitations", "sessions"];

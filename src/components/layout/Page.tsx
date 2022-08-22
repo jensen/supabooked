@@ -1,10 +1,15 @@
-import { useLocation, Outlet, Link } from "@remix-run/react";
+import { useLocation, Outlet, Link, useTransition } from "@remix-run/react";
 import DiscordLogin from "~/components/auth/DiscordLogin";
 import Logout from "~/components/auth/Logout";
 import { useUser } from "~/context/user";
+import { css } from "~/utils/styles";
 
 export default function PageLayout() {
   const location = useLocation();
+  const transition = useTransition();
+
+  const isLoading =
+    transition.state === "submitting" || transition.state === "loading";
 
   const { isAuthenticated } = useUser();
 
@@ -16,13 +21,17 @@ export default function PageLayout() {
             <span className="font-light">supa</span>booked
           </Link>
         </span>
-
         {location.pathname === "/authenticated" ? null : isAuthenticated ? (
           <Logout />
         ) : (
           <DiscordLogin />
         )}
       </header>
+      <div
+        className={css("self-start h-0.5 w-full bg-yellow-400", {
+          loading: isLoading,
+        })}
+      ></div>
       <section className="flex-grow p-4 pt-12 overflow-y-auto w-9/12">
         <Outlet />
       </section>
