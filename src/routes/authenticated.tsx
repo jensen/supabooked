@@ -30,7 +30,7 @@ export default function Authenticated() {
 
           setAuth(response);
 
-          navigate(response.user ? "/sessions/new" : "/");
+          navigate("/");
         }
       }
     );
