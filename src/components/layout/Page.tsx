@@ -29,7 +29,7 @@ export default function PageLayout() {
           loading: isLoading,
         })}
       ></div>
-      <section className="flex-grow p-4 pt-12 overflow-y-auto w-9/12">
+      <section className="flex-grow p-4 pt-12 overflow-y-auto min-w-[80ch]">
         <Outlet />
       </section>
       <footer className="w-full p-4 border-t border-border">
