@@ -43,13 +43,13 @@ const Session = (props: SessionProps) => {
         <span className="text-lg">{props.session.title}</span>
         <span className="text-xs">{props.session.description}</span>
       </div>
-      <div className="self-stretch flex justify-end items-center space-x-2">
-        <span className="text-xs">
+      <div className="self-stretch flex flex-col items-end space-x-2">
+        <span className="text-xl font-bold">
+          {format(new Date(props.session.scheduled_from), "MMM do")}
+        </span>
+        <span className="text-sm">
           {format(props.session.scheduled_from, "HH:mm")} -{" "}
           {format(props.session.scheduled_to, "HH:mm")}
-        </span>
-        <span className="text-xl font-bold">
-          {format(new Date(props.session.scheduled_from), "dd")}
         </span>
       </div>
       <div
