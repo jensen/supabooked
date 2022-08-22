@@ -1,5 +1,4 @@
 import { useLocation, Outlet, Link, useTransition } from "@remix-run/react";
-import DiscordLogin from "~/components/auth/DiscordLogin";
 import Logout from "~/components/auth/Logout";
 import { useUser } from "~/context/user";
 import { css } from "~/utils/styles";
@@ -21,11 +20,9 @@ export default function PageLayout() {
             <span className="font-light">supa</span>booked
           </Link>
         </span>
-        {location.pathname === "/authenticated" ? null : isAuthenticated ? (
-          <Logout />
-        ) : (
-          <DiscordLogin />
-        )}
+        {location.pathname === "/authenticated"
+          ? null
+          : isAuthenticated && <Logout />}
       </header>
       <div
         className={css("self-start h-0.5 w-full bg-yellow-400", {

@@ -5,12 +5,11 @@ export default function DiscordLogin() {
 
   return (
     <button
-      className="bg-discord-blue px-4 py-1 rounded flex items-center gap-2"
+      className="bg-discord-blue hover:bg-discord-blue/60 px-8 py-4 rounded flex items-center gap-2"
       onClick={login}
     >
       <svg
-        width={21}
-        height={16}
+        height={32}
         viewBox="0 0 71 55"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useUser } from "~/context/user";
 import { fetchCallback } from "~/services/supabase";
 import { useNavigate } from "@remix-run/react";
+import { CircleNotchAnimated } from "~/components/shared/Icons";
 
 export default function Authenticated() {
   const { user, supabaseClient, setAuth } = useUser();
@@ -39,5 +40,12 @@ export default function Authenticated() {
     };
   }, [user, supabaseClient, navigate, setAuth]);
 
-  return <div />;
+  return (
+    <section className="h-full grid place-content-center">
+      <div className="border border-dashed border-border px-8 py-4 flex space-x-4 items-center">
+        <CircleNotchAnimated />
+        <span className="font-light text-2xl">Authenticating</span>
+      </div>
+    </section>
+  );
 }
