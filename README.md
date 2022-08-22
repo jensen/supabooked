@@ -1,62 +1,49 @@
-# Welcome to Remix!
+# Supabooked
 
-- [Remix Docs](https://remix.run/docs)
-- [Netlify Functions](https://www.netlify.com/products/functions/)
+Submitted to [Launch Week 5 Hackathon](https://www.madewithsupabase.com/launch-week-5).
 
-## Netlify Setup
+## Demo
 
-1. Install the [Netlify CLI](https://www.netlify.com/products/dev/):
+[https://supabooked.netlify.app/](https://supabooked.netlify.app/)
 
-```sh
-npm i -g netlify-cli
-```
+![Supabooked](https://user-images.githubusercontent.com/14803/185850222-88857ff9-82d0-46db-bf71-5878169bf145.png)
 
-If you have previously installed the Netlify CLI, you should update it to the latest version:
+## Application Design
 
-```sh
-npm i -g netlify-cli@latest
-```
+Backed by Supabase, a user can create invitations to schedule meetings. The user is presented with a weekly calendar of available hours that can be booked. These hours are based on the settings determined by the admin in their own timezone.
 
-2. Sign up and log in to Netlify:
+![Schedule Session](https://user-images.githubusercontent.com/14803/185849877-f00aeebf-e72b-4e7f-b975-0baaf6c34571.png)
 
-```sh
-netlify login
-```
+![Admin Invitations](https://user-images.githubusercontent.com/14803/185850028-0ad37427-cf2d-45c9-86cf-cc4144659b75.png)
 
-3. Create a new site:
+## Application Design
 
-```sh
-netlify init
-```
+Backed by Supabase, a user can create invitations to schedule meetings. The user is presented with a weekly calendar of available hours that can be booked. These hours are based on the settings determined by the admin in their own timezone.
+## Technical Considerations
 
-## Development
+### Timezones
 
-The Remix dev server starts your app in development mode, rebuilding assets on file changes. To start the Remix dev server:
+For the most part we can let the browser convert the dates for us. In some cases we need to compare dates based on the specific timezone of a user.
 
-```sh
-npm run dev
-```
+### supabase-js v2
 
-Open up [http://localhost:3000](http://localhost:3000), and you should be ready to go!
+Using the lastest release candidate for supabase-js to handle realtime, storage, auth and database queries.
 
-The Netlify CLI builds a production version of your Remix App Server and splits it into Netlify Functions that run locally. This includes any custom Netlify functions you've developed. The Netlify CLI runs all of this in its development mode.
+### Authentication
 
-```sh
-netlify dev
-```
+Still searching for ideal authentication strategies. In this prototype the persistence is turned off since the server runtime has no local storage. Instead we use a session stored in a cookie.
 
-Open up [http://localhost:3000](http://localhost:3000), and you should be ready to go!
+Refreshing the token on the client and the server is ripe for desyncing.
 
-Note: When running the Netlify CLI, file changes will rebuild assets, but you will not see the changes to the page you are on unless you do a browser refresh of the page. Due to how the Netlify CLI builds the Remix App Server, it does not support hot module reloading.
+### Realtime
 
-## Deployment
+When a user views an invitation or signs up after being invited, the updates to the db are subscribed to by the admin panel.
 
-There are two ways to deploy your app to Netlify, you can either link your app to your git repo and have it auto deploy changes to Netlify, or you can deploy your app manually. If you've followed the setup instructions already, all you need to do is run this:
+### Storage
 
-```sh
-# preview deployment
-netlify deploy --build
+An admin can upload a video that attaches to a session. A database trigger is listening for updates to the `storage.objects` table, it updates the `sesssions` table with file keys.
 
-# production deployment
-netlify deploy --build --prod
-```
+## Next Steps
+
+- Support devices with smaller screen
+- Fix authentication bugs
