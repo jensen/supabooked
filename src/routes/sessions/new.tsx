@@ -30,19 +30,17 @@ export const action: ActionFunction = async ({ request }) => {
     throw new Error("Must be logged in");
   }
 
-  await supabaseClient()
-    .from("sessions")
-    .insert(
-      groupContiguousBlocks(selected).map((item) => {
-        return {
-          title,
-          description,
-          scheduled_from: item[0],
-          scheduled_to: addHours(item[item.length - 1], 1),
-          user_id: user.id,
-        };
-      })
-    );
+  await (await supabaseClient()).from("sessions").insert(
+    groupContiguousBlocks(selected).map((item) => {
+      return {
+        title,
+        description,
+        scheduled_from: item[0],
+        scheduled_to: addHours(item[item.length - 1], 1),
+        user_id: user.id,
+      };
+    })
+  );
 
   return redirect(`/schedule`);
 };
@@ -51,7 +49,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const url = new URL(request.url);
   const id = url.searchParams.get("invitation");
 
-  const client = supabaseClient();
+  const client = await supabaseClient();
   const [calendar, settings, invitations] = await Promise.all([
     client.rpc("get_calendar"),
     client.from("settings").select().single(),

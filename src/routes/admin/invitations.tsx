@@ -12,6 +12,7 @@ import {
 import Button from "~/components/shared/Button";
 import { css } from "~/utils/styles";
 import { useStatus } from "~/context/status";
+import { useUser } from "~/context/user";
 
 export const action: ActionFunction = async ({ request }) => {
   const body = await request.formData();
@@ -20,7 +21,7 @@ export const action: ActionFunction = async ({ request }) => {
   const title = body.get("subject");
   const description = body.get("description");
 
-  await supabaseClient().from("invitations").insert({
+  await (await supabaseClient()).from("invitations").insert({
     email,
     title,
     description,
@@ -29,8 +30,10 @@ export const action: ActionFunction = async ({ request }) => {
   return redirect(`/admin/invitations`);
 };
 
-export const loader: LoaderFunction = async () => {
-  const invitations = await supabaseClient().from("invitations").select();
+export const loader: LoaderFunction = async ({ context }) => {
+  const invitations = await (await supabaseClient())
+    .from("invitations")
+    .select();
 
   return json({
     invitations: invitations.data,
@@ -39,6 +42,7 @@ export const loader: LoaderFunction = async () => {
 
 export default function AdminInvitations() {
   const data = useLoaderData();
+  const { supabaseClient } = useUser();
 
   const { onlineUsers } = useStatus();
 
@@ -47,7 +51,9 @@ export default function AdminInvitations() {
   );
 
   useEffect(() => {
-    const channel = supabaseClient()
+    if (supabaseClient === null) return;
+
+    const channel = supabaseClient
       .channel("db-changes")
       .on(
         "postgres_changes",
@@ -69,7 +75,8 @@ export default function AdminInvitations() {
     return () => {
       channel.unsubscribe();
     };
-  }, []);
+  }, [supabaseClient]);
+
   return (
     <>
       <Form

@@ -18,18 +18,32 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  session.set("accessToken", body.get("access_token"));
-  session.set("refreshToken", body.get("refresh_token"));
+  if (
+    body.get("event") === "SIGNED_IN" ||
+    body.get("event") === "TOKEN_REFRESHED"
+  ) {
+    session.set("accessToken", body.get("access_token"));
+    session.set("refreshToken", body.get("refresh_token"));
 
-  if (body.get("provider_token")) {
-    session.set("providerToken", body.get("provider_token"));
+    if (body.get("provider_token")) {
+      session.set("providerToken", body.get("provider_token"));
+    }
+
+    const cookie = await commitSession(session, {
+      expires: getExpiry(),
+    });
+
+    const user = await getUser(cookie);
+
+    return json(user, { headers: new Headers({ "Set-Cookie": cookie }) });
   }
 
-  const cookie = await commitSession(session, {
-    expires: getExpiry(),
-  });
-
-  const user = await getUser(cookie);
-
-  return json(user, { headers: new Headers({ "Set-Cookie": cookie }) });
+  return json(
+    { user: null, accessToken: null },
+    {
+      headers: new Headers({
+        "Set-Cookie": request.headers.get("Cookie") || "",
+      }),
+    }
+  );
 };

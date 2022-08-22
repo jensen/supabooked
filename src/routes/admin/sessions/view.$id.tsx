@@ -1,26 +1,29 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "@remix-run/react";
-import supabaseClient from "~/services/supabase";
 import Modal from "~/components/shared/Modal";
 import Button from "~/components/shared/Button";
+import { useUser } from "~/context/user";
 
 export default function View() {
   const params = useParams();
   const navigate = useNavigate();
+  const { supabaseClient } = useUser();
   const [video, setVideo] = useState<string>();
 
   const handleClose = () => navigate("..");
 
   useEffect(() => {
-    supabaseClient()
-      .storage.from("videos")
+    if (supabaseClient === null) return;
+
+    supabaseClient.storage
+      .from("videos")
       .createSignedUrl(`${params.id}.mp4`, 60)
       .then(({ data, error }) => {
         if (data) {
           setVideo(data.signedUrl);
         }
       });
-  }, [params.id]);
+  }, [supabaseClient, params.id]);
 
   return (
     <Modal title="View Video" onClose={handleClose}>

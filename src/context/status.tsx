@@ -14,11 +14,13 @@ const StatusContext = createContext<IStatusContext>({
 interface Props {}
 
 export default function StatusProvider(props: React.PropsWithChildren<Props>) {
-  const { user } = useUser();
+  const { user, supabaseClient } = useUser();
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
   useEffect(() => {
-    const channel = supabaseClient()
+    if (supabaseClient === null) return undefined;
+
+    const channel = supabaseClient
       .channel("online-users")
       .on("presence", { event: "join" }, (payload: PresenceState) => {
         const idsToAdd = payload.newPresences.map((p) => p.user as string);
@@ -45,7 +47,7 @@ export default function StatusProvider(props: React.PropsWithChildren<Props>) {
     return () => {
       channel.unsubscribe();
     };
-  }, [user]);
+  }, [user, supabaseClient]);
 
   return (
     <StatusContext.Provider

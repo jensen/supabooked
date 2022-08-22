@@ -1,10 +1,13 @@
 import type { User, SupabaseClient } from "@supabase/supabase-js";
-import { useContext, createContext, useEffect, useState } from "react";
+import React, { useContext, createContext, useEffect, useState } from "react";
 import { useNavigate } from "@remix-run/react";
+import supabase from "~/services/supabase";
 
 interface IUserContext {
   isAuthenticated: boolean;
   user: User | null;
+  supabaseClient: SupabaseClient | null;
+  setAuth: React.Dispatch<React.SetStateAction<any>>;
   login: () => void;
   logout: () => void;
 }
@@ -12,80 +15,43 @@ interface IUserContext {
 const UserContext = createContext<IUserContext>({
   isAuthenticated: false,
   user: null,
+  supabaseClient: null,
+  setAuth: () => null,
   login: () => null,
   logout: () => null,
 });
 
-const fetchCallback = async (body: { [key: string]: string }) => {
-  const data = new FormData();
-
-  for (const key in body) {
-    data.append(key, body[key]);
-  }
-
-  const response = await fetch("/api/auth/callback", {
-    method: "post",
-    body: data,
-  });
-
-  return response.json();
-};
-
-const useAuthCallback = (user: User, client: SupabaseClient) => {
-  const [auth, setAuth] = useState({ user: null, accessToken: null });
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const { subscription } = client.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
-          const body: {
-            access_token?: string;
-            refresh_token?: string;
-            provider_token?: string;
-          } = session
-            ? {
-                access_token: session.access_token,
-                refresh_token: session.refresh_token,
-                provider_token: session.provider_token || "",
-              }
-            : {};
-
-          const response = await fetchCallback({ event, ...body });
-
-          setAuth(response);
-
-          if (user === null) {
-            navigate(response.user ? "/sessions/new" : "/");
-          }
-        }
-      }
-    );
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, [user, client.auth, navigate]);
-
-  return auth;
-};
-
 interface Props {
-  supabaseClient: SupabaseClient;
   user: User | null;
+  refreshToken: string;
 }
 
 export default function UserProvider(props: React.PropsWithChildren<Props>) {
-  const { supabaseClient, user: authedUser } = props;
+  const { user: authedUser, refreshToken } = props;
+  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(
+    null
+  );
+  const [auth, setAuth] = useState({ user: null, accessToken: null });
 
-  const auth = useAuthCallback(authedUser, supabaseClient);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase(refreshToken).then((client) => setSupabaseClient(client));
+  }, [refreshToken]);
 
   const user = auth.user || authedUser;
+
+  if (!supabaseClient) {
+    return null;
+  }
 
   return (
     <UserContext.Provider
       value={{
         isAuthenticated: Boolean(user),
         user,
+        setAuth,
+        supabaseClient,
         login: () =>
           supabaseClient.auth.signInWithOAuth({
             provider: "discord",
@@ -95,7 +61,10 @@ export default function UserProvider(props: React.PropsWithChildren<Props>) {
               }/authenticated`,
             },
           }),
-        logout: () => supabaseClient.auth.signOut(),
+        logout: () => {
+          setAuth({ user: null, accessToken: null });
+          navigate("/api/auth/logout");
+        },
       }}
     >
       {props.children}

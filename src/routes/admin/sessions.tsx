@@ -16,7 +16,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     throw new Error("Must be logged in");
   }
 
-  const sessions = await supabaseClient()
+  const sessions = await (await supabaseClient())
     .from("sessions")
     .select()
     .order("scheduled_from");

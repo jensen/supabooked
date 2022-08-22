@@ -1,9 +1,11 @@
-import { Outlet, Link } from "@remix-run/react";
+import { useLocation, Outlet, Link } from "@remix-run/react";
 import DiscordLogin from "~/components/auth/DiscordLogin";
 import Logout from "~/components/auth/Logout";
 import { useUser } from "~/context/user";
 
 export default function PageLayout() {
+  const location = useLocation();
+
   const { isAuthenticated } = useUser();
 
   return (
@@ -14,7 +16,12 @@ export default function PageLayout() {
             <span className="font-light">supa</span>booked
           </Link>
         </span>
-        {isAuthenticated ? <Logout /> : <DiscordLogin />}
+
+        {location.pathname === "/authenticated" ? null : isAuthenticated ? (
+          <Logout />
+        ) : (
+          <DiscordLogin />
+        )}
       </header>
       <section className="flex-grow p-4 pt-12 overflow-y-auto w-9/12">
         <Outlet />

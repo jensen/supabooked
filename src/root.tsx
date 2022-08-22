@@ -9,7 +9,6 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import UserProvider from "~/context/user";
-import supabaseClient from "~/services/supabase";
 import { getUser } from "~/services/session";
 import type { LoaderFunction } from "@remix-run/node";
 
@@ -28,10 +27,11 @@ export function links() {
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const { user } = await getUser(request.headers.get("Cookie"));
+  const { user, refreshToken } = await getUser(request.headers.get("Cookie"));
 
   return json({
     user,
+    refreshToken,
     env: {
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
@@ -50,7 +50,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <UserProvider user={data.user} supabaseClient={supabaseClient()}>
+        <UserProvider user={data.user} refreshToken={data.refreshToken}>
           <StatusProvider>
             <PageLayout />
           </StatusProvider>
