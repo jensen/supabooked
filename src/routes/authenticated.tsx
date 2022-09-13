@@ -24,6 +24,8 @@ export const loader = () => {
 
     const params = new URLSearchParams(window.location.hash.replace("#", "?"));
 
+    window.location.hash = "";
+
     signIn({
       access_token: params.get("access_token"),
       refresh_token: params.get("refresh_token"),
