@@ -33,9 +33,7 @@ export const action: ActionFunction = async ({ request }) => {
       expires: getExpiry(),
     });
 
-    const user = await getUser(cookie);
-
-    return json(user, { headers: new Headers({ "Set-Cookie": cookie }) });
+    return json({}, { headers: new Headers({ "Set-Cookie": cookie }) });
   }
 
   return json(

@@ -10,13 +10,13 @@ import { Video } from "~/components/shared/Icons";
 import { css } from "~/utils/styles";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const { user } = await getUser(request.headers.get("Cookie"));
+  const { user, accessToken } = await getUser(request);
 
   if (!user) {
     throw new Error("Must be logged in");
   }
 
-  const sessions = await (await supabaseClient())
+  const sessions = await supabaseClient(accessToken)
     .from("sessions")
     .select()
     .order("scheduled_from");

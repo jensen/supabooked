@@ -11,13 +11,13 @@ import Button from "~/components/shared/Button";
 import { Video } from "~/components/shared/Icons";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const { user } = await getUser(request.headers.get("Cookie"));
+  const { user, accessToken } = await getUser(request);
 
   if (!user) {
     return redirect("/");
   }
 
-  const sessions = await (await supabaseClient())
+  const sessions = await supabaseClient(accessToken)
     .from("sessions")
     .select()
     .order("scheduled_from")

@@ -1,12 +1,12 @@
 import type { User, SupabaseClient } from "@supabase/supabase-js";
-import React, { useContext, createContext, useEffect, useState } from "react";
+import React, { useContext, createContext, useState } from "react";
 import { useNavigate } from "@remix-run/react";
 import supabase from "~/services/supabase";
 
 interface IUserContext {
   isAuthenticated: boolean;
   user: User | null;
-  supabaseClient: SupabaseClient | null;
+  supabaseClient: SupabaseClient;
   setAuth: React.Dispatch<React.SetStateAction<any>>;
   login: () => void;
   logout: () => void;
@@ -15,7 +15,7 @@ interface IUserContext {
 const UserContext = createContext<IUserContext>({
   isAuthenticated: false,
   user: null,
-  supabaseClient: null,
+  supabaseClient: supabase(),
   setAuth: () => null,
   login: () => null,
   logout: () => null,
@@ -23,21 +23,15 @@ const UserContext = createContext<IUserContext>({
 
 interface Props {
   user: User | null;
-  refreshToken: string;
+  accessToken: string;
 }
 
 export default function UserProvider(props: React.PropsWithChildren<Props>) {
-  const { user: authedUser, refreshToken } = props;
-  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(
-    null
-  );
+  const { user: authedUser, accessToken } = props;
+  const [supabaseClient] = useState<SupabaseClient>(supabase(accessToken));
   const [auth, setAuth] = useState({ user: null, accessToken: null });
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    supabase(refreshToken).then((client) => setSupabaseClient(client));
-  }, [refreshToken]);
 
   const user = auth.user || authedUser;
 

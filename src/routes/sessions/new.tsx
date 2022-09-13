@@ -24,32 +24,35 @@ export const action: ActionFunction = async ({ request }) => {
   const description = body.get("description") as string;
   const selected = body.getAll("selected") as string[];
 
-  const { user } = await getUser(request.headers.get("Cookie"));
+  const { user, accessToken } = await getUser(request);
 
   if (!user) {
     throw new Error("Must be logged in");
   }
 
-  await (await supabaseClient()).from("sessions").insert(
-    groupContiguousBlocks(selected).map((item) => {
-      return {
-        title,
-        description,
-        scheduled_from: item[0],
-        scheduled_to: addHours(item[item.length - 1], 1),
-        user_id: user.id,
-      };
-    })
-  );
+  await supabaseClient(accessToken)
+    .from("sessions")
+    .insert(
+      groupContiguousBlocks(selected).map((item) => {
+        return {
+          title,
+          description,
+          scheduled_from: item[0],
+          scheduled_to: addHours(item[item.length - 1], 1),
+          user_id: user.id,
+        };
+      })
+    );
 
   return redirect(`/schedule`);
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const url = new URL(request.url);
-  const id = url.searchParams.get("invitation");
+  const id = new URL(request.url).searchParams.get("invitation");
+  const { accessToken } = await getUser(request);
 
-  const client = await supabaseClient();
+  const client = supabaseClient(accessToken);
+
   const [calendar, settings, invitation] = await Promise.all([
     client.rpc("get_calendar"),
     client.from("settings").select().single(),

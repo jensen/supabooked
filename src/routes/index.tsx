@@ -1,42 +1,26 @@
-import type { LoaderFunction } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import create from "~/services/session";
+import { getUser } from "~/services/session";
 import DiscordLogin from "~/components/auth/DiscordLogin";
 import supabaseClient from "~/services/supabase";
 
-export const loader: LoaderFunction = async ({ request }) => {
-  const { getSession, commitSession } = create();
-  const session = await getSession(request.headers.get("Cookie"));
+export const loader = async ({ request }: LoaderArgs) => {
+  const { accessToken } = await getUser(request);
 
-  const refreshToken = session.get("refreshToken") || null;
-
-  if (refreshToken) {
-    const client = await supabaseClient(refreshToken);
-    const {
-      data: { session: refreshed },
-      error,
-    } = await client.auth.getSession();
-
-    if (refreshed) {
-      session.set("accessToken", refreshed.access_token);
-      session.set("refreshToken", refreshed.refresh_token);
-    }
-
-    const cookie = await commitSession(session);
-
-    const profile = await client
+  if (accessToken) {
+    const profile = await supabaseClient(accessToken)
       .from("profiles_private")
       .select()
-      .match({ id: refreshed?.user.id })
       .single();
 
-    return redirect(profile.data.admin ? "/admin" : "/schedule", {
-      headers: new Headers({ "Set-Cookie": cookie }),
-    });
+    if (profile.data) {
+      return redirect(profile.data.admin ? "/admin" : "/schedule");
+    }
   }
 
   return json({});
 };
+
 export default function Index() {
   return (
     <>

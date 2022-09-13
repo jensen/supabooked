@@ -14,15 +14,17 @@ import Button from "~/components/shared/Button";
 import { css } from "~/utils/styles";
 import { useStatus } from "~/context/status";
 import { useUser } from "~/context/user";
+import { getUser } from "~/services/session";
 
 export const action: ActionFunction = async ({ request }) => {
+  const { accessToken } = await getUser(request);
   const body = await request.formData();
 
   const email = body.get("email");
   const title = body.get("subject");
   const description = body.get("description");
 
-  await (await supabaseClient()).from("invitations").insert({
+  await supabaseClient(accessToken).from("invitations").insert({
     email,
     title,
     description,
@@ -31,8 +33,10 @@ export const action: ActionFunction = async ({ request }) => {
   return redirect(`/admin/invitations`);
 };
 
-export const loader: LoaderFunction = async ({ context }) => {
-  const invitations = await (await supabaseClient())
+export const loader: LoaderFunction = async ({ request, context }) => {
+  const { accessToken } = await getUser(request);
+
+  const invitations = await supabaseClient(accessToken)
     .from("invitations")
     .select();
 
@@ -67,8 +71,6 @@ export default function AdminInvitations() {
   }, [data.invitations]);
 
   useEffect(() => {
-    if (supabaseClient === null) return;
-
     const channel = supabaseClient
       .channel("db-changes")
       .on(

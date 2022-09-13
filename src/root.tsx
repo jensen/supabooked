@@ -27,11 +27,11 @@ export function links() {
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const { user, refreshToken } = await getUser(request.headers.get("Cookie"));
+  const { user, accessToken } = await getUser(request);
 
   return json({
     user,
-    refreshToken,
+    accessToken,
     env: {
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
@@ -50,7 +50,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <UserProvider user={data.user} refreshToken={data.refreshToken}>
+        <UserProvider user={data.user} accessToken={data.accessToken}>
           <StatusProvider>
             <PageLayout />
           </StatusProvider>

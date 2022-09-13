@@ -4,52 +4,28 @@ import { Outlet, useLocation, useNavigate } from "@remix-run/react";
 import { Tab } from "@headlessui/react";
 import { css } from "~/utils/styles";
 import supabaseClient from "~/services/supabase";
-import create from "~/services/session";
+import { getUser } from "~/services/session";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
-  const { getSession, commitSession } = create();
-  const session = await getSession(request.headers.get("Cookie"));
 
-  const refreshToken = session.get("refreshToken") || null;
+  const { accessToken } = await getUser(request);
 
-  if (refreshToken) {
-    const client = await supabaseClient(refreshToken);
-    const {
-      data: { session: refreshed },
-      error,
-    } = await client.auth.getSession();
-
-    if (refreshed) {
-      session.set("accessToken", refreshed.access_token);
-      session.set("refreshToken", refreshed.refresh_token);
-    }
-
-    const cookie = await commitSession(session);
-
-    const profile = await (await supabaseClient(refreshToken))
+  if (accessToken) {
+    const profile = await supabaseClient(accessToken)
       .from("profiles_private")
       .select()
       .single();
 
     if (profile.error || profile.data.admin === false) {
-      return redirect("/schedule", {
-        headers: new Headers({ "Set-Cookie": cookie }),
-      });
+      return redirect("/schedule");
     }
 
     if (url.pathname === "/admin") {
-      return redirect("/admin/invitations", {
-        headers: new Headers({ "Set-Cookie": cookie }),
-      });
+      return redirect("/admin/invitations");
     }
 
-    return json(
-      {},
-      {
-        headers: new Headers({ "Set-Cookie": cookie }),
-      }
-    );
+    return json({});
   }
 
   return redirect("/");

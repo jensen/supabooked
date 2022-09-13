@@ -2,16 +2,13 @@ import { createClient } from "@supabase/supabase-js";
 
 let supabaseUrl: string;
 let supabaseAnonKey: string;
-let isBrowser: boolean;
 
 try {
   supabaseUrl = process.env.SUPABASE_URL || "";
   supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "";
-  isBrowser = false;
 } catch {
   supabaseUrl = (window as WindowWithEnvironment).env.SUPABASE_URL;
   supabaseAnonKey = (window as WindowWithEnvironment).env.SUPABASE_ANON_KEY;
-  isBrowser = true;
 }
 
 if (typeof supabaseUrl !== "string") {
@@ -37,25 +34,18 @@ export const fetchCallback = async (body: { [key: string]: string }) => {
   return response.json();
 };
 
-export default async function supabase(refreshToken?: string) {
-  if (refreshToken) {
-    const authedClient = createClient(supabaseUrl, supabaseAnonKey, {
+export default function supabase(accessToken?: string) {
+  if (accessToken) {
+    return createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: false,
       },
+      global: {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
     });
-
-    const result = await authedClient.auth.setSession(refreshToken);
-
-    if (isBrowser && result.data.session) {
-      await fetchCallback({
-        event: "TOKEN_REFRESHED",
-        access_token: result.data.session.access_token,
-        refresh_token: result.data.session.refresh_token,
-      });
-    }
-
-    return authedClient;
   }
 
   return createClient(supabaseUrl, supabaseAnonKey, {

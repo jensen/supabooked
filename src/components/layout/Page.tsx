@@ -1,10 +1,9 @@
-import { useLocation, Outlet, Link, useTransition } from "@remix-run/react";
+import { Outlet, Link, useTransition } from "@remix-run/react";
 import Logout from "~/components/auth/Logout";
 import { useUser } from "~/context/user";
 import { css } from "~/utils/styles";
 
 export default function PageLayout() {
-  const location = useLocation();
   const transition = useTransition();
 
   const isLoading =
@@ -16,13 +15,11 @@ export default function PageLayout() {
     <main className="h-full flex flex-col items-center">
       <header className="w-full p-4 bg-available border-b border-border flex justify-between items-center">
         <span className="font-bold text-lg tracking-wider">
-          <Link to="/">
+          <a href="/">
             <span className="font-light">supa</span>booked
-          </Link>
+          </a>
         </span>
-        {location.pathname === "/authenticated"
-          ? null
-          : isAuthenticated && <Logout />}
+        {isAuthenticated && <Logout />}
       </header>
       <div
         className={css("self-start h-0.5 w-full bg-yellow-400", {

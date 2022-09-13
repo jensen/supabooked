@@ -13,8 +13,6 @@ export default function View() {
   const handleClose = () => navigate("..");
 
   useEffect(() => {
-    if (supabaseClient === null) return;
-
     supabaseClient.storage
       .from("videos")
       .createSignedUrl(`${params.id}.mp4`, 60)

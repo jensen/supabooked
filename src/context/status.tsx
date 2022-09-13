@@ -18,8 +18,6 @@ export default function StatusProvider(props: React.PropsWithChildren<Props>) {
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
   useEffect(() => {
-    if (supabaseClient === null) return undefined;
-
     const channel = supabaseClient
       .channel("online-users")
       .on("presence", { event: "join" }, (payload: PresenceState) => {

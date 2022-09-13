@@ -15,8 +15,9 @@ if (cookieSessionKeyB && typeof cookieSessionKeyB !== "string") {
 
 const LENGTH = 604_800;
 
-export const getUser = async (cookie: string | null) => {
+export const getUser = async (request: Request) => {
   const { getSession } = create();
+  const cookie = request.headers.get("Cookie");
 
   if (!cookie) {
     return { user: null, accessToken: null, refreshToken: null };

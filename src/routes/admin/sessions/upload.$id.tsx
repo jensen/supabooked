@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "@remix-run/react";
-import supabaseClient from "~/services/supabase";
 import Modal from "~/components/shared/Modal";
 import { FileArrowUp, CircleNotchAnimated } from "~/components/shared/Icons";
 import Button from "~/components/shared/Button";
@@ -23,15 +22,13 @@ export default function Upload() {
 
   const handleUpload = () => {
     if (operation.file) {
-      if (supabaseClient) {
-        setOperation((prev) => ({ ...prev, uploading: true }));
-        supabaseClient.storage
-          .from("videos")
-          .upload(`${params.id}.mp4`, operation.file)
-          .then(() => {
-            navigate("..");
-          });
-      }
+      setOperation((prev) => ({ ...prev, uploading: true }));
+      supabaseClient.storage
+        .from("videos")
+        .upload(`${params.id}.mp4`, operation.file)
+        .then(() => {
+          navigate("..");
+        });
     }
   };
 

@@ -1,51 +1,38 @@
-import { useEffect } from "react";
-import { useUser } from "~/context/user";
-import { fetchCallback } from "~/services/supabase";
-import { useNavigate } from "@remix-run/react";
-import { CircleNotchAnimated } from "~/components/shared/Icons";
+export const loader = () => {
+  return new Response(
+    `
+  <style>
+    body {
+      background-color: rgb(44, 44, 44);
+    }
+  </style>
+  <script>
+    function signIn(body) {
+      const data = new FormData();
 
-export default function Authenticated() {
-  const { user, supabaseClient, setAuth } = useUser();
-
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (supabaseClient === null) return;
-
-    const { subscription } = supabaseClient.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_IN") {
-          const body: {
-            access_token?: string;
-            refresh_token?: string;
-            provider_token?: string;
-          } = session
-            ? {
-                access_token: session.access_token,
-                refresh_token: session.refresh_token,
-                provider_token: session.provider_token || "",
-              }
-            : {};
-
-          const response = await fetchCallback({ event, ...body });
-
-          setAuth(response);
-
-          navigate("/");
-        }
+      data.append("event", "SIGNED_IN");
+  
+      for (const key in body) {
+        data.append(key, body[key]);
       }
-    );
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, [user, supabaseClient, navigate, setAuth]);
 
-  return (
-    <section className="h-full grid place-content-center">
-      <div className="border border-dashed border-border px-8 py-4 flex space-x-4 items-center">
-        <CircleNotchAnimated />
-        <span className="font-light text-2xl">Authenticating</span>
-      </div>
-    </section>
+      return fetch("/api/auth/callback", {
+        method: "post",
+        body: data,
+      }).then((response) => response.json());
+    }
+
+    const params = new URLSearchParams(window.location.hash.replace("#", "?"));
+
+    signIn({
+      access_token: params.get("access_token"),
+      refresh_token: params.get("refresh_token"),
+      provider_token: params.get("provider_token") || "",
+    }).then(() => window.location = "/");
+  </script>
+  `,
+    {
+      headers: new Headers({ "Content-Type": "text/html" }),
+    }
   );
-}
+};
