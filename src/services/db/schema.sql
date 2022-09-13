@@ -78,8 +78,8 @@ insert
 -- Sessions
 create table sessions (
   id uuid default extensions.uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc' :: text, now()) not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
 
   title text not null,
   description text not null,
@@ -96,8 +96,8 @@ create table sessions (
 -- Invitations
 create table invitations (
   id uuid default extensions.uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc' :: text, now()) not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
 
   email text not null, 
   title text not null,
@@ -112,8 +112,8 @@ create table invitations (
 -- Settings
 create table settings (
   id uuid default extensions.uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc' :: text, now()) not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
   start_time integer not null,
   end_time integer not null,
   timezone text not null,
@@ -122,22 +122,32 @@ create table settings (
 );
 
 -- Calendar
-create function get_calendar()
-    returns TABLE(date timestamp with time zone, session json)
+create or replace function get_calendar()
+    returns table(date timestamp with time zone, session json)
     language plpgsql
 as
 $$
-begin return query
-  select
-    ts :: timestamp with time zone,
+declare
+  _timezone text;
+  _start_time integer;
+  _end_time integer;
+begin
+
+select start_time, end_time, timezone from settings limit 1 into _start_time, _end_time, _timezone;
+
+return query
+select
+    ts::timestamp with time zone,
     row_to_json(s.*) as session
   from
     generate_series(
-      current_date - '24 hours' :: interval,
-      current_date + (8 * 24 - 1 || ' hours') :: interval,
+      current_date::timestamp at time zone _timezone,
+      current_date::timestamp at time zone _timezone + (7 * 24 - 1 || ' hours')::interval,
       '1 hour'
     ) as ts
-    left join sessions as s on ts between s.scheduled_from and s.scheduled_to
+  left join sessions as s on ts between s.scheduled_from and s.scheduled_to - '1 hour'::interval
+  where date_part('hour', timezone(_timezone, ts::timestamp with time zone)) >= _start_time and
+        date_part('hour', timezone(_timezone, ts::timestamp with time zone)) < _end_time
   order by
     ts asc;
 end

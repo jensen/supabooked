@@ -3,15 +3,7 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, Form } from "@remix-run/react";
 import supabaseClient from "~/services/supabase";
-import {
-  isBefore,
-  getHours,
-  isSameDay,
-  format,
-  getDate,
-  addHours,
-} from "date-fns";
-import { utcToZonedTime } from "date-fns-tz";
+import { isBefore, getHours, setHours, isSameDay, addHours } from "date-fns";
 import Button from "~/components/shared/Button";
 import Week from "~/components/calendar/Week";
 import { getUser } from "~/services/session";
@@ -53,9 +45,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const client = supabaseClient(accessToken);
 
-  const [calendar, settings, invitation] = await Promise.all([
+  const [calendar, invitation] = await Promise.all([
     client.rpc("get_calendar"),
-    client.from("settings").select().single(),
     client
       .from("invitations")
       .update({ viewed: true })
@@ -66,19 +57,53 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   return json({
     availability: calendar.data,
-    settings: settings.data,
     invitation: invitation.data || null,
   });
 };
 
+interface IAvailability {
+  date: string;
+  session: any;
+}
+
 interface ILoaderData {
-  availability: {
-    date: string;
-    session: any;
-  }[];
+  availability: IAvailability[];
   settings: { timezone: string; start_time: number; end_time: number };
   invitation: unknown | null;
 }
+
+const getDays = (availability: IAvailability[]) => {
+  const days = [setHours(new Date(availability[0].date), 0)];
+
+  for (const slot of availability) {
+    const date = new Date(slot.date);
+
+    if (isSameDay(new Date(slot.date), days[days.length - 1]) === false) {
+      days.push(setHours(date, 0));
+    }
+  }
+
+  return days;
+};
+
+const getHourRange = (availability: IAvailability[]) => {
+  let min = new Date(availability[0].date);
+  let max = new Date(availability[0].date);
+
+  for (const slot of availability) {
+    const date = new Date(slot.date);
+
+    if (getHours(date) < getHours(min)) {
+      min = date;
+    }
+
+    if (getHours(date) > getHours(max)) {
+      max = date;
+    }
+  }
+
+  return [getHours(min), getHours(max)];
+};
 
 export default function New() {
   const data = useLoaderData<ILoaderData>();
@@ -86,35 +111,29 @@ export default function New() {
   const [selectedHours, setSelectedHours] = useState<IHour[]>([]);
 
   useEffect(() => {
-    const slots = data.availability
-      .map((slot) => ({ date: new Date(slot.date), session: slot.session }))
-      .filter(({ date }) => {
-        return (
-          getHours(utcToZonedTime(date, data.settings.timezone)) >=
-            data.settings.start_time &&
-          getHours(utcToZonedTime(date, data.settings.timezone)) <
-            data.settings.end_time &&
-          getDate(date) >= getDate(new Date()) &&
-          getDate(date) < getDate(new Date()) + 7
-        );
-      });
+    const range = getHourRange(data.availability);
 
-    const days = Object.values(
-      slots.reduce<{ [key: string]: IHour[] }>((days, slot, index, list) => {
-        const key = format(slot.date, "yyyy-MM-dd");
+    const start = Math.max(0, range[0]);
+    const end = Math.min(range[1], 23);
 
-        if (
-          list[index - 1] === undefined ||
-          isSameDay(list[index - 1].date, slot.date) === false
-        ) {
-          days[key] = [slot];
-        } else {
-          days[key].push(slot);
-        }
+    const days = getDays(data.availability).map((day) => {
+      const hours = [];
 
-        return days;
-      }, {})
-    ).map((day) => ({ day: day[0].date, hours: day }));
+      for (
+        let date = setHours(day, start);
+        date <= setHours(day, end);
+        date = addHours(date, 1)
+      ) {
+        const session =
+          data.availability.find((slot) => {
+            return new Date(slot.date).getTime() === date.getTime();
+          })?.session || null;
+
+        hours.push({ date, session });
+      }
+
+      return { day, hours };
+    });
 
     setDays(days);
   }, [data]);
