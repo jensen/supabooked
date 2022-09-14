@@ -31,7 +31,7 @@ export default function Modal(props) {
               <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-2xl bg-background p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title
                   as="h3"
-                  className="text-lg font-medium leading-6 text-text"
+                  className="text-lg font-bold leading-6 text-text mb-4"
                 >
                   {props.title}
                 </Dialog.Title>
