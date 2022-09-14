@@ -38,11 +38,6 @@ export default function Index() {
           </p>
           <DiscordLogin />
         </div>
-        <img
-          className="border-4 border-border rounded-full shadow-lg"
-          src="/images/hero.png"
-          alt="Splash screen for scheduler"
-        />
       </section>
     </>
   );
