@@ -1,8 +1,8 @@
-import type { ActionFunction } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import create, { getExpiry } from "~/services/session";
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
 
   const { getSession, commitSession } = create();
@@ -20,10 +20,10 @@ export const loader = async ({ request }) => {
     expires: getExpiry(),
   });
 
-  return redirect("/", { headers: new Headers({ "Set-Cookie": cookie }) });
+  return redirect("/?to=/", { headers: new Headers({ "Set-Cookie": cookie }) });
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action = async ({ request }: ActionArgs) => {
   const body = await request.formData();
 
   const { getSession, commitSession, destroySession } = create();
