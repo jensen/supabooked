@@ -1,38 +1,19 @@
-export const loader = () => {
+import type { LoaderArgs } from "@remix-run/node";
+
+export const loader = ({ request }: LoaderArgs) => {
   return new Response(
     `
-  <style>
-    body {
-      background-color: rgb(44, 44, 44);
-    }
-  </style>
-  <script>
-    function signIn(body) {
-      const data = new FormData();
-
-      data.append("event", "SIGNED_IN");
-  
-      for (const key in body) {
-        data.append(key, body[key]);
+    <style>
+      body {
+        background-color: rgb(44, 44, 44);
       }
-
-      return fetch("/api/auth/callback", {
-        method: "post",
-        body: data,
-      }).then((response) => response.json());
-    }
-
-    const params = new URLSearchParams(window.location.hash.replace("#", "?"));
-
-    window.location.hash = "";
-
-    signIn({
-      access_token: params.get("access_token"),
-      refresh_token: params.get("refresh_token"),
-      provider_token: params.get("provider_token") || "",
-    }).then(() => window.location = "/");
-  </script>
-  `,
+    </style>
+    <script>
+      window.location.href = new URL("${
+        new URL(request.url).origin
+      }/api/auth/callback?" + new URLSearchParams(window.location.hash.replace("#", "?")).toString());
+    </script>
+    `,
     {
       headers: new Headers({ "Content-Type": "text/html" }),
     }

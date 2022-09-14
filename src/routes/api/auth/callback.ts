@@ -1,6 +1,27 @@
 import type { ActionFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import create, { getUser, getExpiry } from "~/services/session";
+import { json, redirect } from "@remix-run/node";
+import create, { getExpiry } from "~/services/session";
+
+export const loader = async ({ request }) => {
+  const url = new URL(request.url);
+
+  const { getSession, commitSession } = create();
+
+  const session = await getSession();
+
+  session.set("accessToken", url.searchParams.get("access_token"));
+  session.set("refreshToken", url.searchParams.get("refresh_token"));
+
+  if (url.searchParams.get("provider_token")) {
+    session.set("providerToken", url.searchParams.get("provider_token"));
+  }
+
+  const cookie = await commitSession(session, {
+    expires: getExpiry(),
+  });
+
+  return redirect("/", { headers: new Headers({ "Set-Cookie": cookie }) });
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const body = await request.formData();
