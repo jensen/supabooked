@@ -114,16 +114,19 @@ create table settings (
   id uuid default extensions.uuid_generate_v4() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+
   start_time integer not null,
   end_time integer not null,
   timezone text not null,
+  days_in_advance integer not null,
+  
   user_id uuid default auth.uid() not null,
   constraint user_id foreign key(user_id) references profiles(id) on delete cascade
 );
 
 -- Calendar
-create or replace function get_calendar()
-    returns table(date timestamp with time zone, session json)
+create or replace function get_calendar(_date timestamptz default current_date)
+    returns table(date timestamp with time zone)
     language plpgsql
 as
 $$
@@ -131,23 +134,26 @@ declare
   _timezone text;
   _start_time integer;
   _end_time integer;
+  _days_in_advance integer;
 begin
 
-select start_time, end_time, timezone from settings limit 1 into _start_time, _end_time, _timezone;
+select start_time, end_time, timezone, days_in_advance
+from settings limit 1
+into _start_time, _end_time, _timezone, _days_in_advance;
 
 return query
 select
-    ts::timestamp with time zone,
-    row_to_json(s.*) as session
+    ts::timestamp with time zone
   from
     generate_series(
-      current_date::timestamp at time zone _timezone,
-      current_date::timestamp at time zone _timezone + (7 * 24 - 1 || ' hours')::interval,
+      _date::timestamp at time zone _timezone,
+      _date::timestamp at time zone _timezone + (_days_in_advance * 24 - 1 || ' hours')::interval,
       '1 hour'
     ) as ts
   left join sessions as s on ts between s.scheduled_from and s.scheduled_to - '1 hour'::interval
   where date_part('hour', timezone(_timezone, ts::timestamp with time zone)) >= _start_time and
-        date_part('hour', timezone(_timezone, ts::timestamp with time zone)) < _end_time
+        date_part('hour', timezone(_timezone, ts::timestamp with time zone)) < _end_time and
+        s is null
   order by
     ts asc;
 end
