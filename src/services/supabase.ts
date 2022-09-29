@@ -19,21 +19,6 @@ if (typeof supabaseAnonKey !== "string") {
   throw new Error("Most provide SUPABASE_ANON_KEY");
 }
 
-export const fetchCallback = async (body: { [key: string]: string }) => {
-  const data = new FormData();
-
-  for (const key in body) {
-    data.append(key, body[key]);
-  }
-
-  const response = await fetch("/api/auth/callback", {
-    method: "post",
-    body: data,
-  });
-
-  return response.json();
-};
-
 export default function supabase(accessToken?: string) {
   if (accessToken) {
     return createClient(supabaseUrl, supabaseAnonKey, {

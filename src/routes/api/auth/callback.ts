@@ -27,5 +27,5 @@ export const action = async ({ request }: ActionArgs) => {
     expires: getExpiry(),
   });
 
-  return redirect("/?to=/", { headers: new Headers({ "Set-Cookie": cookie }) });
+  return redirect("/", { headers: new Headers({ "Set-Cookie": cookie }) });
 };
