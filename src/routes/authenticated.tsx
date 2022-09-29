@@ -8,10 +8,12 @@ export const loader = ({ request }: LoaderArgs) => {
         background-color: rgb(44, 44, 44);
       }
     </style>
+    <form id="auth" action="/api/auth/callback" method="post">
+      <input type="hidden" id="credentials" name="credentials" />
+    </form>
     <script>
-      window.location.href = new URL("${
-        new URL(request.url).origin
-      }/api/auth/callback?" + new URLSearchParams(window.location.hash.replace("#", "?")).toString());
+      document.getElementById("credentials").value = window.location.hash.replace("#", "");
+      document.getElementById("auth").submit();
     </script>
     `,
     {
